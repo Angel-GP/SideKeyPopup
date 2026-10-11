@@ -12,6 +12,11 @@ dist/
 *.iml
 local.properties
 
+# 签名密钥：绝不进仓库
+keystore/
+*.keystore
+*.jks
+
 # 系统垃圾
 .DS_Store
 Thumbs.db

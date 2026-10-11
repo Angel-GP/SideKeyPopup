@@ -328,10 +328,56 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\build.ps1 -Test    # �
 
 > 已经装好 Android SDK 的话，用 `-ToolchainRoot <路径>` 指过去就能跳过下载。
 
-生成测试用的图片素材（`build\test\photo.png` / `anim.gif`）：
+生成测试用的图片素材（已经随仓库分发，只在想重新生成时才需要跑）：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\make-test-assets.ps1
+```
+
+### 签名
+
+**签名密钥不进仓库**（`.gitignore` 挡了 `keystore/`、`*.keystore`、`*.jks`）。
+构建时按顺序从两处取：
+
+| 来源 | 用在 | 内容 |
+| --- | --- | --- |
+| `keystore/keystore.properties` | 本地 | `storeFile` / `storePassword` / `keyAlias` / `keyPassword` |
+| `SIGNING_*` 环境变量 | CI | `SIGNING_STORE_FILE` / `SIGNING_STORE_PASSWORD` / `SIGNING_KEY_ALIAS` / `SIGNING_KEY_PASSWORD` |
+
+两处都没有时 `release` 就**不签名**，`assembleRelease` 仍会成功，产物是未签名的 APK。
+`debug` 用的是 `tools/build.ps1` 在本机生成的调试密钥（同样不进仓库）。
+
+CI 里的密钥来自仓库的 GitHub Secrets：
+
+| Secret | 内容 |
+| --- | --- |
+| `KEYSTORE_BASE64` | 密钥库文件的 base64 |
+| `KEYSTORE_PASSWORD` | 密钥库口令 |
+| `KEY_ALIAS` | 别名 |
+| `KEY_PASSWORD` | 密钥口令 |
+
+自己生成一套：
+
+```bash
+keytool -genkeypair -v -keystore keystore/release.keystore \
+  -storepass <口令> -keypass <口令> -alias sidekeypopup \
+  -dname "CN=SideKeyPopup, O=<你的名字>, C=CN" \
+  -keyalg RSA -keysize 4096 -validity 10000
+
+base64 -w0 keystore/release.keystore > keystore-base64.txt   # 内容填进 KEYSTORE_BASE64
+```
+
+> ⚠️ **换签名密钥后，旧版本没法覆盖安装**——Android 会拒绝签名不一致的包，
+> 得先卸载。密钥丢了就再也签不出能覆盖升级的包了，**务必自己备份好**。
+
+### 发版
+
+`.github/workflows/release.yml` 在 push 到 `main`、打 `v*` 标签、或手动触发时运行：
+跑单元测试 → 编译 release → 上传 APK artifact。**打标签时**还会把 APK 附到 GitHub Release。
+
+```bash
+git tag v1.0
+git push origin v1.0
 ```
 
 ---
