@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 悬浮窗（把图片显示在其他应用上层）——这是本应用的核心能力 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- 前台服务：读 /dev/input 时把进程吊住，以及显示悬浮图时的常驻通知 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 后台弹图片时不被省电策略掐掉 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!--
+        显式声明要查 Shizuku 的包。
+        注意包名是 moe.shizuku.privileged.api；moe.shizuku.manager 只是权限名的前缀，
+        写成那个会永远查不到，界面就一直显示「未安装」。
+    -->
+    <queries>
+        <package android:name="moe.shizuku.privileged.api" />
+
+        <!--
+            厂商的「自启动管理」页面。
+            Android 11 起有包可见性限制：不在这里声明的话，resolveActivity /
+            getActivityInfo / getPackageInfo 对这些包一律失败，
+            Permissions.openAutoStartSettings 的候选就一个都命中不了，
+            结果又退回到系统原生应用信息页——也就是之前那个错的跳转。
+            除了写死的候选，还会到这几个包里按类名扫自启动页，所以宁可多列几个。
+        -->
+        <package android:name="com.coloros.safecenter" />
+        <package android:name="com.oplus.safecenter" />
+        <package android:name="com.oppo.safe" />
+        <package android:name="com.oneplus.security" />
+        <package android:name="com.coloros.phonemanager" />
+        <package android:name="com.oplus.phonemanager" />
+        <package android:name="com.coloros.oppoguardelf" />
+        <package android:name="com.oplus.battery" />
+    </queries>
+
+    <application
+        android:name=".SideKeyPopupApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SideKeyPopup">
+
+        <!--
+            唯一的主界面：侧键设置 + 图片入口 + 运行状态。
+
+            这里**故意不写** android:excludeFromRecents：那是静态属性，装上就定死了，
+            而「隐藏后台」得由用户随时开关，默认还必须是不隐藏。
+            运行时的切换在 Recents.apply()，走 ActivityManager.AppTask.setExcludeFromRecents。
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- 长按桌面图标 -> 菜单里的「更换图片」「图片设置」 -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <!-- 权限申请都收在这个二级窗口里 -->
+        <activity
+            android:name=".PermissionActivity"
+            android:exported="false"
+            android:label="@string/permission_title"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.SideKeyPopup.Secondary" />
+
+        <!--
+            图片与外观设置：棋盘格预览 + 大小/透明度/旋转/形状/圆角/羽化。
+            单独一个任务栈，免得从长按菜单进来再按 Home、再点图标时跟着一起弹出来。
+        -->
+        <activity
+            android:name=".overlay.ImageSettingsActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/settings_title"
+            android:parentActivityName=".MainActivity"
+            android:taskAffinity="com.linxi.sidekeypopup.image"
+            android:theme="@style/Theme.SideKeyPopup" />
+
+        <!-- 侧键识别的主力：无障碍服务。只观察，不消费按键，所以不会和系统长按打架。 -->
+        <service
+            android:name=".input.SideKeyAccessibilityService"
+            android:exported="true"
+            android:label="@string/accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!--
+            Root / Shizuku 模式下把进程吊住。
+
+            stopWithTask="false" 是关键：默认值 true 意味着用户从最近任务里划掉本应用时，
+            系统会把这个服务一起停掉，侧键监听就断了——也就是「不小心划掉后台」。
+            改成 false 之后划掉任务只会回调 onTaskRemoved，服务继续跑。
+            无障碍模式不依赖它（那个服务由系统托管）。
+        -->
+        <service
+            android:name=".input.SideKeyService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:stopWithTask="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="读取侧键按键事件，实现用户自定义的单击动作" />
+        </service>
+
+        <!--
+            悬浮图本体：WindowManager 上的 TYPE_APPLICATION_OVERLAY + 出现/消失动画。
+            合并前它是独立应用、需要 exported 给别人调；现在同进程直接 show()，不需要导出了。
+        -->
+        <service
+            android:name=".overlay.OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="在其他应用上层显示用户选定的图片" />
+        </service>
+
+        <!-- Shizuku 要求声明的 provider；authority 必须是 ${applicationId}.shizuku -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+    </application>
+
+</manifest>

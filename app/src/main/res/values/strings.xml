@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">图片弹窗</string>
+    <string name="app_subtitle">单击侧键，图片将在任意界面弹出</string>
+
+    <string name="switch_enabled">启用侧键</string>
+    <string name="switch_enabled_desc">关掉之后完全不看侧键</string>
+
+    <string name="section_image">图片</string>
+    <string name="entry_image">当前图片</string>
+    <string name="entry_image_none">还没有选择图片</string>
+    <string name="entry_image_selected">已选择</string>
+    <string name="entry_change_image">更换图片</string>
+    <string name="entry_change_image_desc">从相册里重新选一张</string>
+    <string name="entry_image_settings">图片与外观</string>
+    <string name="entry_image_settings_desc">大小、不透明度、旋转、形状、圆角、边缘羽化</string>
+
+    <string name="section_work_mode">工作方式</string>
+    <string name="work_mode">工作方式</string>
+    <string name="status_last">最近捕获</string>
+    <string name="source_auto">自动</string>
+    <string name="source_none">未就绪</string>
+    <string name="source_accessibility">无障碍服务</string>
+    <string name="source_root">Root</string>
+    <string name="source_shizuku">Shizuku</string>
+    <string name="work_mode_inactive">未生效</string>
+    <string name="work_mode_blind">可能看不到侧键</string>
+
+    <string name="read_mode_auto">自动</string>
+    <string name="read_mode_auto_desc">优先用已经授权的 Shizuku / Root 直接读 /dev/input，都没有才用无障碍</string>
+    <string name="read_mode_accessibility">无障碍服务</string>
+    <string name="read_mode_accessibility_desc">不需要额外权限，但厂商在系统策略里消化掉的按键（比如一加侧键）可能看不到</string>
+    <string name="read_mode_shizuku">Shizuku</string>
+    <string name="read_mode_shizuku_desc">以 shell 身份读 /dev/input，免 root，最可靠</string>
+    <string name="read_mode_root">Root</string>
+    <string name="read_mode_root_desc">用 su 读 /dev/input</string>
+
+    <string name="value_never">—</string>
+
+    <string name="entry_permission">权限与状态</string>
+    <string name="entry_permission_desc">悬浮窗 / 无障碍 / Root / Shizuku / 电池优化</string>
+
+    <string name="permission_title">权限与状态</string>
+    <string name="perm_granted">已授权</string>
+    <string name="perm_denied">未授权</string>
+    <string name="perm_unavailable">不可用</string>
+    <string name="perm_go">去开启</string>
+    <string name="perm_request">申请</string>
+    <string name="perm_retry">重新申请</string>
+    <string name="perm_open">去设置</string>
+    <string name="perm_requesting">申请中…</string>
+
+    <string name="perm_overlay">显示在其他应用上层</string>
+    <string name="perm_overlay_desc">悬浮窗权限。没有它图片弹不出来，这是最基础的一项。</string>
+
+    <string name="perm_accessibility">无障碍服务</string>
+    <string name="accessibility_label">图片弹窗</string>
+    <string name="perm_accessibility_desc">捕获侧键按键事件。不需要 root，也不需要额外装东西。</string>
+    <string name="perm_root">Root 权限</string>
+    <string name="perm_root_desc">用 su 直接读 /dev/input，作为无障碍之外的另一条路。</string>
+    <string name="perm_shizuku">Shizuku</string>
+    <string name="perm_shizuku_desc">以 shell 身份读 /dev/input，免 root。</string>
+    <string name="perm_shizuku_not_installed">未安装</string>
+    <string name="perm_shizuku_not_installed_desc">需要先装 Shizuku。它以 shell 身份运行，本应用通过它来读 /dev/input。</string>
+    <string name="perm_shizuku_not_running">未连接</string>
+    <string name="perm_shizuku_not_running_desc">Shizuku 没在运行，或者还没把权限通道推给本应用。\n点「打开 Shizuku」启动它；如果它本来就在运行，请在 Shizuku 里停止再启动一次（或重启手机），然后回到本页。</string>
+    <string name="perm_shizuku_outdated">版本过旧</string>
+    <string name="perm_shizuku_outdated_desc">Shizuku 服务端版本太旧，读侧键需要 13 或更高。请升级 Shizuku。</string>
+    <string name="perm_shizuku_denied_desc">Shizuku 在运行，但还没授权给本应用。点「申请授权」。</string>
+    <string name="perm_shizuku_denied_before_desc">之前拒绝过授权，Shizuku 不会再弹窗了。请打开 Shizuku，在「已授权的应用」里手动允许本应用。</string>
+    <string name="perm_shizuku_granted_desc">已连接，可以读取侧键。</string>
+    <string name="perm_shizuku_open">打开 Shizuku</string>
+    <string name="perm_shizuku_download">去下载</string>
+    <string name="perm_shizuku_request">申请授权</string>
+    <string name="perm_notification">通知权限</string>
+    <string name="perm_notification_desc">显示前台服务的常驻通知，避免进程被系统清掉。</string>
+    <string name="perm_battery">忽略电池优化</string>
+    <string name="perm_battery_desc">避免应用被省电策略清掉，导致侧键偶尔失灵。</string>
+    <string name="perm_background">后台弹出界面 / 自启动</string>
+    <string name="perm_background_desc">ColorOS 上必须手动允许，否则后台弹图片会被拦。点「去设置」直接打开厂商的自启动管理列表。</string>
+    <string name="autostart_not_found_title">没找到自启动管理页</string>
+    <string name="autostart_not_found_message">没能在这台机器上定位到厂商的自启动管理页面——ColorOS 各版本改包名、改类名都很频繁。\n\n请手动前往：\n· 手机管家 → 权限隐私 → 自启动管理\n· 或 设置 → 应用 → 自启动管理\n\n在本机设置里直接搜「自启动」最快。找到「图片弹窗」并允许。</string>
+
+    <string name="perm_hide_background">隐藏后台</string>
+    <string name="perm_hide_background_desc">开启后本应用不会出现在最近任务里，也就不会被一键清理划掉。侧键监听照常工作。</string>
+    <string name="hide_background_on">已隐藏</string>
+    <string name="hide_background_off">未隐藏</string>
+    <string name="hide_background_enable">隐藏</string>
+    <string name="hide_background_disable">取消隐藏</string>
+
+    <string name="notification_channel">运行状态</string>
+    <string name="notification_title">图片弹窗正在运行</string>
+    <string name="notification_text">正在监听侧键，按一下就会弹出图片</string>
+
+    <string name="toast_root_granted">已拿到 Root 权限</string>
+    <string name="toast_root_denied">没拿到 Root 权限</string>
+    <string name="toast_shizuku_requested">已发起授权请求，请在 Shizuku 的弹窗里允许</string>
+    <string name="toast_shizuku_request_failed">授权请求没发出去：本应用还没拿到 Shizuku 的连接</string>
+
+    <!-- ===================== 以下来自悬浮图片那部分 ===================== -->
+
+    <string name="pick_image">选择图片</string>
+    <string name="need_overlay_permission">请先允许「显示在其他应用上层」，图片才能悬浮显示</string>
+    <string name="overlay_permission_denied">没有悬浮窗权限，无法显示图片</string>
+    <string name="no_picker">没有找到可用的图片选择器</string>
+    <string name="saving">正在保存图片…</string>
+    <string name="save_failed">图片读取失败，请重新选择一张</string>
+    <string name="notif_title">图片弹窗显示中</string>
+    <string name="notif_text">点击图片以外的任意位置即可关闭</string>
+    <string name="channel_name">图片弹窗</string>
+    <string name="action_change">更换图片</string>
+    <string name="action_settings">设置</string>
+    <string name="action_close">关闭</string>
+    <string name="settings_title">图片与外观</string>
+    <string name="shortcut_change_short">更换图片</string>
+    <string name="shortcut_change_long">重新选择弹出的图片</string>
+    <string name="shortcut_settings_short">图片设置</string>
+    <string name="shortcut_settings_long">调整大小、形状与边缘羽化</string>
+</resources>

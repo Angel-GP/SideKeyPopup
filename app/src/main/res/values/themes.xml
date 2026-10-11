@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+        主界面：Material 3 浅色，无 ActionBar（自己画标题）。
+        二级窗口用 .Secondary（带 ActionBar，才有返回箭头）。
+    -->
+    <style name="Theme.SideKeyPopup" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/brand</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_soft</item>
+        <item name="colorOnPrimaryContainer">@color/brand_dark</item>
+        <item name="colorSecondaryContainer">@color/brand</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorSurfaceVariant">@color/page_bg</item>
+        <item name="colorOnSurfaceVariant">@color/ink_sub</item>
+        <item name="colorOutline">@color/line</item>
+        <item name="android:colorBackground">@color/page_bg</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/ink_sub</item>
+        <item name="android:statusBarColor">@color/page_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.SideKeyPopup.Secondary" parent="Theme.Material3.Light">
+        <item name="colorPrimary">@color/brand</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_soft</item>
+        <item name="colorOnPrimaryContainer">@color/brand_dark</item>
+        <item name="colorSecondaryContainer">@color/brand</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorSurfaceVariant">@color/page_bg</item>
+        <item name="colorOnSurfaceVariant">@color/ink_sub</item>
+        <item name="colorOutline">@color/line</item>
+        <item name="android:colorBackground">@color/page_bg</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/ink_sub</item>
+        <item name="android:statusBarColor">@color/page_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+</resources>

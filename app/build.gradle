@@ -1,0 +1,89 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.linxi.sidekeypopup'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.linxi.sidekeypopup"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    // 固定用仓库里的调试签名，保证覆盖安装时签名不变。
+    signingConfigs {
+        debug {
+            storeFile file('../keystore/debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
+    // Shizuku 的用户服务靠 AIDL 跨进程通信，必须显式打开。
+    buildFeatures {
+        aidl true
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+        }
+    }
+}
+
+// Robolectric 运行时会去 Maven 下载 android-all jar，国内走阿里云镜像；
+// 同时把 user.home 指到构建目录里，否则下载锁文件会写到 C:\Users\<name> 下。
+tasks.withType(Test).configureEach {
+    def roboHome = layout.buildDirectory.dir('robolectric-home').get().asFile
+    doFirst { roboHome.mkdirs() }
+    systemProperty 'robolectric.dependency.repo.url', 'https://maven.aliyun.com/repository/public'
+    systemProperty 'robolectric.dependency.repo.id', 'aliyun'
+    systemProperty 'user.home', roboHome.absolutePath
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat 'full'
+        showStandardStreams = true
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+
+    // Shizuku / Sui：以 shell 身份读 /dev/input，作为无障碍之外的另一条路。
+    // 两个 AAR 的 aar-metadata 里 minCompileSdk=1，不会像 libxposed 那样被 AGP 拒掉。
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
+
+    // 在 JVM 上真跑一遍界面和配置读写，不需要真机 / 模拟器。
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'androidx.test:core:1.5.0'
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 长按桌面图标后弹出的菜单项（静态快捷方式，API 25+）。 -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_change"
+        android:shortcutId="change_image"
+        android:shortcutLongLabel="@string/shortcut_change_long"
+        android:shortcutShortLabel="@string/shortcut_change_short">
+        <intent
+            android:action="com.linxi.sidekeypopup.action.PICK_IMAGE"
+            android:targetClass="com.linxi.sidekeypopup.MainActivity"
+            android:targetPackage="com.linxi.sidekeypopup" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_settings"
+        android:shortcutId="settings"
+        android:shortcutLongLabel="@string/shortcut_settings_long"
+        android:shortcutShortLabel="@string/shortcut_settings_short">
+        <intent
+            android:action="com.linxi.sidekeypopup.action.IMAGE_SETTINGS"
+            android:targetClass="com.linxi.sidekeypopup.MainActivity"
+            android:targetPackage="com.linxi.sidekeypopup" />
+    </shortcut>
+
+</shortcuts>
