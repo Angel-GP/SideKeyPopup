@@ -43,13 +43,14 @@ public class ImageSettingsActivityTest {
 
     private void putImage(Context ctx, String asset) throws Exception {
         File dst = new File(ctx.getFilesDir(), "overlay_image");
-        File src = new File("../build/test/" + asset);
-        assertTrue("missing test asset " + src.getAbsolutePath(), src.exists());
-        try (InputStream in = new FileInputStream(src);
+        // 从 classpath 读，不要依赖工作目录：CI 上没有本机生成的 build/test
+        InputStream in = ImageSettingsActivityTest.class.getResourceAsStream("/" + asset);
+        assertTrue("missing test asset " + asset, in != null);
+        try (InputStream src = in;
              OutputStream out = new FileOutputStream(dst)) {
             byte[] buf = new byte[8192];
             int n;
-            while ((n = in.read(buf)) > 0) {
+            while ((n = src.read(buf)) > 0) {
                 out.write(buf, 0, n);
             }
         }

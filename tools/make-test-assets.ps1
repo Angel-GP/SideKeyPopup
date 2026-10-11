@@ -1,7 +1,10 @@
 # =============================================================================
-#  Generate test assets for device / emulator verification:
-#    build\test\photo.png  - 900x600 static image with obvious green corners
-#    build\test\anim.gif   - 3-frame animated GIF that loops forever
+#  Generate test assets used by ImageSettingsActivityTest:
+#    app\src\test\resources\photo.png  - 900x600 static image with green corners
+#    app\src\test\resources\anim.gif   - 3-frame animated GIF that loops forever
+#
+#  These are checked in, so the tests can run anywhere (including CI).
+#  Only re-run this if you want to regenerate them.
 #
 #  NOTE: keep this file pure ASCII. Windows PowerShell 5.1 reads .ps1 files
 #  without a BOM as ANSI (GBK on zh-CN systems) and mangles non-ASCII text.
@@ -9,7 +12,7 @@
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$out  = Join-Path $root 'build\test'
+$out  = Join-Path $root 'app\src\test\resources'
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
 Add-Type -AssemblyName System.Drawing
