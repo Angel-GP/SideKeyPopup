@@ -55,16 +55,21 @@ LGPL-3.0（或 GPL-3.0）授权，不能改成 MIT / Apache-2.0 这类宽松协�
 | `COPYING` | GNU 通用公共许可证第 3 版全文（GPL-3.0） |
 | `NOTICE.md` | 本文件：版权声明与第三方作品归属 |
 
-**两份都要带**，理由在许可证原文里：
+**两份许可证都要带**，理由在许可证原文里：
 
-- 序言（第 8 行）：*"This version of the GNU Lesser General Public License incorporates
-  the terms and conditions of version 3 of the GNU General Public License…"*
+- 序言（LGPL 正文第 8 行）：*"This version of the GNU Lesser General Public License
+  incorporates the terms and conditions of version 3 of the GNU General Public License…"*
   —— LGPL-3.0 把 GPL-3.0 的条款整体并入，不附上 GPL-3.0 全文，读者就无从知晓完整条款；
 - 第 3 条 b 项、第 4 条 b 项都直接要求：*"Accompany the … with a copy of the GNU GPL
   and this license document."*
 
 > 许可证全文取自 [SPDX license-list-data](https://github.com/spdx/license-list-data)
 > 的 `LGPL-3.0-only.txt` 与 `GPL-3.0-only.txt`，是官方原文，未作任何改动。
+>
+> 说明：SPDX 的 `LGPL-3.0-only.txt` 是**合并版**（LGPL 正文 + GPL 全文，共 304 行）。
+> 仓库里按许可证本身的说法把它拆成两份：LGPL 正文（前 71 行）放 `LICENSE`，
+> GPL 全文放 `COPYING`。拆开是因为 GitHub 的许可证识别只认单独的 LGPL 文本，
+> 合并版会被判成 `Other`。
 
 ---
 
