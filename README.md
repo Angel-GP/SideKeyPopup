@@ -5,17 +5,16 @@
 按一下手机侧键（一加 / OPPO 的那颗三段式开关下面的按键），选好的图片就作为系统级悬浮窗
 浮在当前界面之上——不打开任何界面、不切走你正在用的应用。点图片以外的任意位置收起。
 
-> 这一版是把原来的两个应用（`FloatingImage` 悬浮图片、`SideKeyLite` 侧键 Lite）
-> **合并成了一个**。合并前它们靠一套导出的跨应用接口互相调用，见文末
-> [为什么合并](#为什么合并)。
-
 | | |
 | --- | --- |
 | 包名 | `com.linxi.sidekeypopup` |
 | 应用名 | 图片弹窗 |
 | minSdk / targetSdk | 26 / 34 |
-| 产物 | `dist\SideKeyPopup-1.0.apk` |
-| 许可 | **GNU LGPL-3.0**（见 [版权声明](NOTICE.md)） |
+| 许可 | **GNU LGPL-3.0**（见 [许可](#许可)） |
+
+只用公开 API + Shizuku / Root 权限，**不碰系统、不需要 Xposed**，装完即用、卸载即净。
+
+> 仓库只放源码，不含 APK。要装的话先看[自己编译](#自己编译)。
 
 ---
 
@@ -73,12 +72,20 @@
 >
 > 选了哪条路但没权限时不会硬撑，会自动退回另一条，并在界面上标出来。
 
-当前用的是哪条、最近有没有真的抓到过侧键，主界面「工作方式」和「最近捕获」里直接能看到。
-选了某条路但没权限、实际走的是另一条时会标上「未生效」；
-如果走的是无障碍又一直没抓到过按键，会直接写「可能看不到侧键」——
-一加 / OPPO 上这条路的失败表现就是「按了没反应」，不写出来根本查不出问题。
-
 三条都不通时模块什么都不做，侧键保持系统原样——**不会把侧键弄失灵**。
+
+「工作方式」那一行不只是个选项，它承担了全部状态提示的职责：
+
+| 情况 | 显示 |
+| --- | --- |
+| 选自动，实际在用 Shizuku | `自动 · Shizuku` |
+| 选自动，一条路都没通 | `未就绪` |
+| 手选 Shizuku，正常 | `Shizuku` |
+| 手选 Shizuku 但没权限，退回了无障碍 | `Shizuku · 未生效` |
+| 走无障碍，而且从来没抓到过按键 | `无障碍服务 · 可能看不到侧键` |
+
+最后一条是最要紧的：一加 / OPPO 的侧键到不了无障碍层，失败表现就是「按了没反应」，
+不把结论直接写在界面上，用户根本查不出问题。
 
 > Root / Shizuku 这两条路要在应用进程里挂一个线程一直读设备，所以会起一个前台服务把进程吊住
 > （通知栏会有一条低优先级常驻通知）。无障碍那条路不需要，系统自己会保活无障碍服务。
@@ -133,7 +140,7 @@ binder 就一直不会来。
 
 ## 安装
 
-1. 装 `dist\SideKeyPopup-1.0.apk`。
+1. 装构建出来的 `dist/SideKeyPopup-1.0.apk`（仓库不含 APK，见[自己编译](#自己编译)）。
 2. 打开 App → 点「权限与状态」→ 开 **显示在其他应用上层**（悬浮窗，必开）。
 3. 同一页里再选一条读侧键的路：**开无障碍服务**（最省事），或者申请 Shizuku / Root。
 4. 回主界面 → 「更换图片」选一张。
@@ -302,7 +309,7 @@ private static void performAction(Context context, Config config) {
 
 > 本机没有可用的模拟器，图标**没法在真机上看**；当前模型也不支持读图，所以我同样看不到。
 > 上面的结论是把同一套几何用 System.Drawing 栅格化之后逐像素统计出来的，不是肉眼看的。
-> 成品预览图在 `build\icon-preview\icon-sheet.png`（无遮罩 / 正圆 / 圆角方形 / 48dp / 72dp 并排）。
+> 预览图（无遮罩 / 正圆 / 圆角方形 / 48dp / 72dp 并排）是本机的临时产物，不在仓库里。
 
 ---
 
@@ -315,9 +322,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\build.ps1          # �
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\build.ps1 -Test    # 连测试一起
 ```
 
-工具链的查找顺序是：`-ToolchainRoot` 参数 → 项目里的 `.toolchain\` →
-同级的 `FloatingImage\.toolchain`（本机已有就直接复用）→ 都没有就自己下载一份到
-`.toolchain\`。下载约 1.5 GB，只有第一次需要。
+脚本会按顺序找工具链：`-ToolchainRoot` 参数 → 项目里的 `.toolchain/` →
+同级目录下已备好的工具链 → 都没有就自己下载一份到 `.toolchain/`。
+**首次编译要下约 1.5 GB**（JDK 17 + Gradle 8.2 + SDK android-34），之后不再下。
+
+> 已经装好 Android SDK 的话，用 `-ToolchainRoot <路径>` 指过去就能跳过下载。
 
 生成测试用的图片素材（`build\test\photo.png` / `anim.gif`）：
 
@@ -339,16 +348,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\make-test-assets.ps1
 | `SourceChoiceTest` | 9 | 优先级挑选、没权限时的回退 |
 | `ShizukuBridgeTest` | 7 | 5 种状态判定、包名 vs 权限名前缀那个坑 |
 
-其中两条是这次合并专门加的回归测试：
+几条值得一提的：
 
 - `overlayServiceIsNotExportedAnymore` —— 悬浮图服务**必须**是 `exported="false"`，
-  防止哪天又被人当成跨应用接口；
+  否则又变成一个跨应用接口；
 - `shortPressShowsTheOverlay` —— 走真实分发路径，确认按侧键起的是
-  `OverlayService` 而不是把本应用当普通 App 拉起来；
+  `OverlayService`，而不是把本应用当普通 App 拉起来；
 - `workModeShowsAutoPlusTheActiveSource` 等 5 条 —— 「工作方式」那一行在各种
   组合下（自动 / 手选 / 没权限回退 / 无障碍看不到按键）显示得对不对；
-- `theRemovedSectionsAreGone` —— 被删掉的那几个区块（单击动作、单独的读取方式、
-  提示行）的 view id 在布局里必须已经不存在。
+- `hideBackgroundRowTogglesTheSetting` —— 「隐藏后台」点一下要真的存下来、再点要能取消；
+- `autoStartPrefersTheColorOsPageOverAppDetails` —— 自启动跳转必须优先跳厂商页，
+  而不是系统原生的应用信息页。
 
 ### 还没验证的
 
@@ -363,49 +373,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\make-test-assets.ps1
 
 ---
 
-## 为什么合并
+## 设计取舍
 
-上一版是两个应用 + 一套导出的「特殊接口」：侧键 Lite 通过
-`startForegroundService(显式组件 + SHOW action)` 去起悬浮图片的服务，
-被 Android 12+ 的后台前台服务限制拦下来时，再退回拉起一个透明 Activity。
-
-那套东西现在**全部删掉了**：
-
-| 删掉的东西 | 为什么不再需要 |
+| 取舍 | 原因 |
 | --- | --- |
-| `FloatPicClient` | 跨应用调用客户端，同进程直接调 `OverlayService.show()` |
-| `ShowOverlayActivity` | 为绕过后台 FGS 限制而存在的透明 Activity 兜底 |
-| `OverlayService` 的 `exported` + intent-filter | 服务不再对外暴露，`exported="false"` |
-| `ForegroundServiceStartNotAllowedException` 的处理路径 | 本应用自己有 `SYSTEM_ALERT_WINDOW`，是后台起 FGS 的豁免条件 |
-| 两个应用的图标 / 安装包 / 权限页 | 一个应用一套 |
-
-代价是：原来两个应用可以分开升级、侧键 Lite 还能去调别的应用；
-现在是一个整体。对「按侧键弹图片」这个用途来说，简单比灵活重要。
-
-### 界面也一起瘦了
-
-合并完第一版之后主界面还是把两个应用的东西并排放着，读起来太累，所以又删了一轮：
-
-| 删掉的东西 | 现在是什么样 |
-| --- | --- |
-| 「单击做什么」整块 + `AppPickerDialog` / `AppEntry` + `QUERY_ALL_PACKAGES` | 动作写死是弹图片，`SideKeyEngine.performAction()` 就一行 `OverlayService.show(context)` |
-| 单独的「读取方式」区块 | 并进「工作方式」那一行，点它切换 |
-| 「运行状态」里那串来源 + 设备细节 | 只留「工作方式」和「最近捕获」两行；细节（盯着哪个设备）不再显示，但引擎里还在记 |
-| 底下那句「只识别短按…」 | 去掉 |
-| 权限页顶部的说明段落 | 去掉，直接列权限行 |
-
-「工作方式」那一行的取值逻辑值得单独说一句，因为它承担了原来那几行提示的职责：
-
-| 情况 | 显示 |
-| --- | --- |
-| 选自动，实际在用 Shizuku | `自动 · Shizuku` |
-| 选自动，一条路都没通 | `未就绪` |
-| 手选 Shizuku，正常 | `Shizuku` |
-| 手选 Shizuku 但没权限，退回了无障碍 | `Shizuku · 未生效` |
-| 走无障碍，而且从来没抓到过按键 | `无障碍服务 · 可能看不到侧键` |
-
-最后一条是最要紧的：一加 / OPPO 的侧键到不了无障碍层，失败表现就是「按了没反应」，
-不把结论直接写在界面上，用户根本查不出问题。
+| 单击动作写死是「弹图片」 | 这个应用就干这一件事。留一个应用选择器只会让主界面变长——`SideKeyEngine.performAction()` 现在整个方法就一行 `OverlayService.show(context)` |
+| 长按不拦截，交给系统 | 一加 / OPPO 的长按是既有行为，抢过来没有意义 |
+| 不申请 `QUERY_ALL_PACKAGES` | 没有应用选择器了，不需要枚举已安装应用 |
+| 悬浮图服务 `exported="false"` | 同进程直接调用，不需要对外暴露任何接口 |
+| 「运行状态」只留两行 | 设备细节（盯着哪个 `eventN`）引擎里还在记，但界面上不显示，免得主界面读起来太累 |
+| 只支持单击 | 双击 / 长按 / 组合键是上游 Xposed 模块的玩法；这里只做「按一下弹图片」 |
 
 ---
 
@@ -427,20 +404,75 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\make-test-assets.ps1
 装完即用、卸载即净。除此之外的实现（三条来源的优先级与切换、悬浮窗、界面、图标）
 都是本项目自己写的，与上游的对应部分做法不同。
 
-### 许可上的连带后果
+---
 
-上游以 **LGPL-3.0** 授权，而 LGPL-3.0 是传染性的：**本项目因此也必须以 LGPL-3.0 授权**，
-不能改成 MIT / Apache-2.0 这类宽松协议。完整说明、沿用范围的逐条对照、
-以及上游许可声明的出处，都在 **[NOTICE.md](NOTICE.md)**。
+## 仓库约定
+
+### 目录布局
+
+| 路径 | 内容 |
+| --- | --- |
+| `app/src/main/java/` | 应用源码（Java） |
+| `app/src/main/aidl/` | Shizuku UserService 的 AIDL 接口 |
+| `app/src/main/res/` | 布局、图标、字符串 |
+| `app/src/test/java/` | JVM 单元测试（Robolectric） |
+| `tools/build.ps1` | 构建脚本：备工具链 → 编译 → 跑测试 → 出包 |
+| `tools/make-test-assets.ps1` | 生成测试用的图片素材 |
+| `LICENSE` / `COPYING` | 许可证全文 |
+| `NOTICE.md` | 版权声明与第三方作品归属 |
+
+`dist/`、`build/`、`.gradle/`、`.toolchain/` 都是构建产物，**不进仓库**（见 `.gitignore`）。
+
+### 提交规范
+
+提交信息用 [Conventional Commits](https://www.conventionalcommits.org/)：
+
+```
+<type>(<scope>): <描述>
+```
+
+| type | 用在 |
+| --- | --- |
+| `feat` | 新功能 |
+| `fix` | 修 bug |
+| `docs` | 只改文档 |
+| `refactor` | 重构，不改行为 |
+| `test` | 只改测试 |
+| `chore` | 构建脚本、依赖、杂务 |
+| `style` | 格式，不影响逻辑 |
+
+例如：
+
+```
+feat(overlay): 支持边缘羽化
+fix(input): 修掉 resolveActivity 误判厂商自启动页的问题
+docs: 补充 LGPL-3.0 版权声明
+```
+
+主分支是 `main`，直接往 `main` 提交。
+
+---
+
+## 许可
+
+本项目以 **GNU 宽通用公共许可证第 3 版（LGPL-3.0）** 授权。
+
+    Copyright (C) 2026 linxi
 
 | 文件 | 内容 |
 | --- | --- |
 | `LICENSE` | LGPL-3.0 全文 |
-| `COPYING` | GPL-3.0 全文（LGPL-3.0 序言并入 GPL-3.0 条款，§3b / §4b 要求两份一起分发） |
-| `NOTICE.md` | 版权声明 + 第三方归属 |
+| `COPYING` | GPL-3.0 全文 |
+| `NOTICE.md` | 版权声明 + 第三方作品归属 |
 
-### 旧工程
+**两份许可证都要带**，理由在许可证原文里：
 
-`FloatingImage` 和 `SideKeyLite` 两个旧工程仍然保留在原目录，可以单独编译，
-不再维护。**注意 `SideKeyLite` 里有一份同样的 `InputEventStream.java`，
-它同样受 LGPL-3.0 约束，但目前还没有加上许可声明。**
+- 序言：*"This version of the GNU Lesser General Public License incorporates the terms
+  and conditions of version 3 of the GNU General Public License…"*
+  —— LGPL-3.0 把 GPL-3.0 的条款整体并入，不附上 GPL-3.0 全文，读者就无从知晓完整条款；
+- 第 3 条 b 项、第 4 条 b 项都直接要求：*"Accompany the … with a copy of the GNU GPL
+  and this license document."*
+
+因为沿用了上游的 LGPL-3.0 代码（见上一节），**本项目也必须以 LGPL-3.0 授权**，
+不能改成 MIT / Apache-2.0 这类宽松协议。沿用范围的逐条对照、以及上游许可声明的出处，
+都在 **[NOTICE.md](NOTICE.md)**。
