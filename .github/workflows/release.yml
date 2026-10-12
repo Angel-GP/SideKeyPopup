@@ -92,6 +92,29 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
-            || gh release create "$GITHUB_REF_NAME" --generate-notes
+          # 发布说明是仓库里手写的，不用 --generate-notes 那串链接
+          NOTES=".github/release-notes/${GITHUB_REF_NAME}.md"
+          if [ ! -f "$NOTES" ]; then
+            echo "::error::缺少发布说明 $NOTES"
+            exit 1
+          fi
+
+          APK="$(ls out/*.apk)"
+          {
+            cat "$NOTES"
+            echo
+            echo "---"
+            echo
+            echo "**本次构建**　\`$(basename "$APK")\`　$(du -h "$APK" | cut -f1)"
+            echo
+            echo "SHA-256　\`$(sha256sum "$APK" | cut -d' ' -f1)\`"
+          } > release-notes.md
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" \
+              --title "SideKeyPopup ${GITHUB_REF_NAME}" --notes-file release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "SideKeyPopup ${GITHUB_REF_NAME}" --notes-file release-notes.md
+          fi
           gh release upload "$GITHUB_REF_NAME" out/*.apk --clobber
