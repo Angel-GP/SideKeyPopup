@@ -110,11 +110,16 @@ jobs:
             echo "SHA-256　\`$(sha256sum "$APK" | cut -d' ' -f1)\`"
           } > release-notes.md
 
+          # --draft=false 不能省：gh 可能把 release 建/留在草稿状态，
+          # 草稿匿名访问是看不到的，等于没发。
+          publish() {
+            gh release "$1" "$GITHUB_REF_NAME" --draft=false \
+              --title "SideKeyPopup ${GITHUB_REF_NAME}" --notes-file release-notes.md
+          }
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release edit "$GITHUB_REF_NAME" \
-              --title "SideKeyPopup ${GITHUB_REF_NAME}" --notes-file release-notes.md
-          else
-            gh release create "$GITHUB_REF_NAME" \
-              --title "SideKeyPopup ${GITHUB_REF_NAME}" --notes-file release-notes.md
+            publish edit
+          elif ! publish create; then
+            # 已经存在一个草稿时 create 会失败，改用 edit 把它发出去
+            publish edit
           fi
           gh release upload "$GITHUB_REF_NAME" out/*.apk --clobber
