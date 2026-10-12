@@ -99,21 +99,8 @@ jobs:
             exit 1
           fi
 
-          APK="$(ls out/*.apk)"
-          CERTS="$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK")"
-          {
-            cat "$NOTES"
-            echo
-            echo "---"
-            echo
-            echo "\`$(basename "$APK")\`　$(du -h "$APK" | cut -f1)"
-            echo
-            echo "SHA-256　\`$(sha256sum "$APK" | cut -d' ' -f1)\`"
-            echo
-            echo "签名　\`$(echo "$CERTS" | sed -n 's/^Signer #1 certificate DN: //p')\`"
-            echo
-            echo "证书 SHA-256　\`$(echo "$CERTS" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')\`"
-          } > release-notes.md
+          # 发布说明整篇来自仓库，不再自动追加内容
+          cp "$NOTES" release-notes.md
 
           # --draft=false 不能省：gh 可能把 release 建/留在草稿状态，
           # 草稿匿名访问是看不到的，等于没发。
